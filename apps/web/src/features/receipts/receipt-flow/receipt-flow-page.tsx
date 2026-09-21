@@ -8,6 +8,7 @@ import { confirmReceipt, type ConfirmReceiptResult } from '@/services/receipts/c
 import { loadReceiptCompletion, type ReceiptCompletionViewModel } from '@/services/receipts/receipt-completion-service'
 import { loadReceiptConference, type ReceiptConferenceViewModel } from '@/services/receipts/receipt-conference-service'
 import { createReceiptDraft, getReceiptDraft, updateReceiptDraft, type ReceiptDraftInput, type ReceiptDraftRecord } from '@/services/receipts/receipt-draft-service'
+import { loadReceiptFormOptions, type ReceiptFormOption } from '@/services/receipts/receipt-form-options-service'
 import { Breadcrumb } from '@/ui/components/breadcrumb'
 import { Button } from '@/ui/components/button'
 import { PageHeader } from '@/ui/components/page-header'
@@ -101,6 +102,8 @@ export function ReceiptFlowPage({ movementId }: ReceiptFlowPageProps) {
   const { activeScope, loading: scopeLoading, error: scopeError } = useScope()
   const requestedStep = stepFromSearch(search)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [originOptions, setOriginOptions] = useState<ReceiptFormOption[]>([])
+  const [materialOptions, setMaterialOptions] = useState<ReceiptFormOption[]>([])
   const [draft, setDraft] = useState<ReceiptDraftRecord | null>(null)
   const [draftLoading, setDraftLoading] = useState(movementId !== null)
   const [conference, setConference] = useState<ReceiptConferenceViewModel | null>(null)
@@ -115,6 +118,34 @@ export function ReceiptFlowPage({ movementId }: ReceiptFlowPageProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const cameraInputRef = useRef<HTMLInputElement | null>(null)
   const effectiveStep: ReceiptResumeStep = draft?.status === 'posted' ? 'concluir' : requestedStep
+
+  useEffect(() => {
+    let cancelled = false
+    if (!activeScope) {
+      setOriginOptions([])
+      setMaterialOptions([])
+      return () => { cancelled = true }
+    }
+
+    void loadReceiptFormOptions(activeScope)
+      .then((options) => {
+        if (!cancelled) {
+          setOriginOptions(options.origins)
+          setMaterialOptions(options.materials)
+        }
+      })
+      .catch((cause) => {
+        if (!cancelled) {
+          setErrorMessage(
+            cause instanceof Error
+              ? cause.message
+              : 'Não foi possível carregar materiais e origens.',
+          )
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [activeScope])
 
   useEffect(() => {
     let cancelled = false
@@ -338,8 +369,24 @@ export function ReceiptFlowPage({ movementId }: ReceiptFlowPageProps) {
             <StatusBadge tone="neutral">Rascunho</StatusBadge>
           </div>
           <div className="v-receipt-form-grid">
-            <label className="v-field">Origem<input className="v-control" value={form.origin} onChange={(event) => setField('origin', event.target.value)} placeholder="Empresa, cooperativa ou fornecedor" /></label>
-            <label className="v-field">Material<input className="v-control" value={form.material} onChange={(event) => setField('material', event.target.value)} placeholder="Material recebido" /></label>
+            <label className="v-field">
+              Origem
+              <select className="v-control" value={form.origin} onChange={(event) => setField('origin', event.target.value)}>
+                <option value="">Selecione a origem</option>
+                {originOptions.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="v-field">
+              Material
+              <select className="v-control" value={form.material} onChange={(event) => setField('material', event.target.value)}>
+                <option value="">Selecione o material</option>
+                {materialOptions.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label}</option>
+                ))}
+              </select>
+            </label>
             <label className="v-field">Peso/quantidade<input className="v-control" inputMode="decimal" type="number" min="0" step="0.01" value={form.quantityKg} onChange={(event) => setField('quantityKg', event.target.value)} /></label>
             <label className="v-field">Data e hora<input className="v-control" type="datetime-local" value={form.occurredAtLocal} onChange={(event) => setField('occurredAtLocal', event.target.value)} /></label>
           </div>
