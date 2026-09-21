@@ -165,9 +165,9 @@ test.each([
 test.each([
   ['/recebimentos/novo?step=dados', 'bootstrap'],
   ['/recebimentos/novo/abc?step=comprovacao', 'abc'],
-] as const)('renders the receipt flow route for %s', (path, expectedMovement) => {
+] as const)('renders the receipt flow route for %s', async (path, expectedMovement) => {
   render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
-  expect(screen.getByTestId('receipt-flow-page')).toHaveTextContent(expectedMovement)
+  expect(await screen.findByTestId('receipt-flow-page')).toHaveTextContent(expectedMovement)
 })
 
 test.each([
@@ -188,9 +188,9 @@ test.each([
 test.each([
   ['/vendas/nova?step=dados', 'bootstrap'],
   ['/vendas/nova/abc?step=comprovacao', 'abc'],
-] as const)('renders the sale flow route for %s', (path, expectedMovement) => {
+] as const)('renders the sale flow route for %s', async (path, expectedMovement) => {
   render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
-  expect(screen.getByTestId('sale-flow-page')).toHaveTextContent(expectedMovement)
+  expect(await screen.findByTestId('sale-flow-page')).toHaveTextContent(expectedMovement)
 })
 
 test('matches one document detail path segment', () => {
@@ -199,7 +199,7 @@ test('matches one document detail path segment', () => {
   expect(matchDocumentDetailPath('/documentos/a/b')).toBeNull()
 })
 
-test('renders the document detail route directly', () => {
+test('renders the document detail route directly', async () => {
   render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath="/documentos/document-id"><AppRoutes /></RouterProvider></ScopeProvider>)
-  expect(screen.getByTestId('document-detail-page')).toHaveTextContent('document-id')
+  expect(await screen.findByTestId('document-detail-page')).toHaveTextContent('document-id')
 })
