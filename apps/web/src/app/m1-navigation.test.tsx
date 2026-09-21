@@ -171,7 +171,7 @@ test.each([
   ['/vendas/nova?step=dados', 'bootstrap'],
   ['/vendas/nova/abc?step=comprovacao', 'abc'],
 ] as const)('renders the sale flow route for %s', (path, expectedMovement) => {
-  render(<RouterProvider initialPath={path}><AppRoutes /></RouterProvider>)
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
   expect(screen.getByTestId('sale-flow-page')).toHaveTextContent(expectedMovement)
 })
 
