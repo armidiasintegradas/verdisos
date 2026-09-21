@@ -1638,6 +1638,23 @@ export type Database = {
         }
         Returns: string
       }
+      create_counterparty_m1: {
+        Args: {
+          p_external_name: string
+          p_external_tax_id?: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
+      create_material_m1: {
+        Args: {
+          p_category: string
+          p_code: string
+          p_name: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
       create_sale_draft_m1: {
         Args: {
           p_buyer_counterparty_id: string
