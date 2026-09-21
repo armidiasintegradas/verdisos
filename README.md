@@ -2,12 +2,14 @@
 
 Plataforma integrada de gestão da circularidade e impacto socioambiental.
 
-## 🚀 Demonstração Online (M1 Cooperative Pilot)
+## 🚀 Estado de Produção
 
-A interface operacional do **M1 Cooperative Pilot** está homologada e publicada em produção:
+O código em `main` contém o baseline operacional endurecido do **VERDIS OS — Cooperativas**, com autenticação real, onboarding, multi-tenant, cadastros, equipe, permissões e gates de produção.
+
+A URL pública atual ainda exibe o **piloto legado** e permanece preservada até o cutover controlado:
 👉 **[https://armidiasintegradas.github.io/verdisos/](https://armidiasintegradas.github.io/verdisos/)**
 
-Ambiente padrão: **Cooperativa Demo · M1 Pilot (Galpão 01)**.
+O cutover para o baseline operacional está rastreado na **Issue #19** e só deve ocorrer após a conexão/configuração de um projeto Supabase VERDIS dedicado, deploy das migrations/Edge Function e homologação E2E.
 
 ## 🛠️ Como Executar Localmente
 
@@ -79,7 +81,9 @@ Portanto, o primeiro produto é:
 
 ## Fluxo de desenvolvimento
 
-`Produto/PRD → domínio → dados → UX no Stitch → issue/branch no GitHub → implementação no Antigravity → testes → pull request → homologação`
+`Produto/PRD → domínio → dados → UX no Stitch → issue/branch no GitHub → implementação → testes → pull request → homologação → cutover controlado`
+
+O GitHub é a fonte de verdade do produto e do código. O ambiente publicado só é promovido após gates de CI e validação do backend de produção.
 
 ## Documentação
 
