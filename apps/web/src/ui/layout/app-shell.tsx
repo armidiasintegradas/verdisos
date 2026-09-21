@@ -142,9 +142,6 @@ export function AppShell({ children }: AppShellProps) {
                     <Icon name={icon} size={19} />
                   </span>
                   <span>{label}</span>
-                  {label === 'Pendências' ? (
-                    <span className="v-shell__nav-count" aria-hidden="true">3</span>
-                  ) : null}
                 </RouterLink>
               )
             })}
