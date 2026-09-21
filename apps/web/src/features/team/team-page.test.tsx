@@ -57,7 +57,12 @@ beforeEach(() => {
       unitId: 'unit-1',
     },
   ])
-  mocks.inviteCooperativeUser.mockResolvedValue(undefined)
+  mocks.inviteCooperativeUser.mockResolvedValue({
+    invited: true,
+    existingUser: false,
+    userId: 'user-3',
+    membershipId: 'membership-3',
+  })
   mocks.setCooperativeMembershipStatus.mockResolvedValue(undefined)
 })
 
@@ -110,4 +115,26 @@ test('suspends and reactivates memberships through controlled service', async ()
       'active',
     )
   })
+})
+
+
+test('shows association result when the email already belongs to a Verdis account', async () => {
+  mocks.inviteCooperativeUser.mockResolvedValue({
+    invited: false,
+    existingUser: true,
+    userId: 'user-existing',
+    membershipId: 'membership-existing',
+  })
+
+  renderTeam()
+  await screen.findByText('Maria Gestora')
+
+  fireEvent.change(screen.getByLabelText('E-mail'), {
+    target: { value: 'existente@coop.org' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar convite' }))
+
+  expect(
+    await screen.findByText('Usuário existente vinculado à cooperativa com sucesso.'),
+  ).toBeInTheDocument()
 })
