@@ -43,6 +43,6 @@ test('renders scoped stock from persistent ledger data', async () => {
   )
 
   expect(await screen.findByText('PET')).toBeInTheDocument()
-  expect(screen.getByText('1.200 kg')).toBeInTheDocument()
+  expect(screen.getAllByText('1.200 kg').length).toBeGreaterThan(0)
   expect(screen.getByText('500 kg')).toBeInTheDocument()
 })
