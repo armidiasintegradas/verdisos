@@ -5,8 +5,13 @@ const envSchema = z.object({
   VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
 })
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321'
-const rawKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'demo-publishable-key'
+const production = import.meta.env.PROD
+const rawUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  (production ? '' : 'http://127.0.0.1:54321')
+const rawKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  (production ? '' : 'demo-publishable-key')
 
 const parsed = envSchema.safeParse({
   VITE_SUPABASE_URL: rawUrl,
@@ -20,4 +25,3 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data
-
