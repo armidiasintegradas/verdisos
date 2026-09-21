@@ -3,6 +3,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().url(),
   VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  VITE_ALLOW_SELF_SIGNUP: z.enum(['true', 'false']).default('false'),
 })
 
 const production = import.meta.env.PROD
@@ -16,6 +17,7 @@ const rawKey =
 const parsed = envSchema.safeParse({
   VITE_SUPABASE_URL: rawUrl,
   VITE_SUPABASE_PUBLISHABLE_KEY: rawKey,
+  VITE_ALLOW_SELF_SIGNUP: import.meta.env.VITE_ALLOW_SELF_SIGNUP,
 })
 
 if (!parsed.success) {
@@ -25,3 +27,4 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data
+export const allowSelfSignup = env.VITE_ALLOW_SELF_SIGNUP === 'true'
