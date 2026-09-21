@@ -1689,10 +1689,7 @@ export type Database = {
         }[]
       }
       list_cooperative_team_m1: {
-        Args: {
-          p_organization_id: string
-          p_unit_id?: string
-        }
+        Args: { p_organization_id: string; p_unit_id?: string }
         Returns: {
           display_name: string
           email: string
@@ -1771,10 +1768,7 @@ export type Database = {
         Returns: undefined
       }
       set_cooperative_membership_status_m1: {
-        Args: {
-          p_membership_id: string
-          p_status: string
-        }
+        Args: { p_membership_id: string; p_status: string }
         Returns: undefined
       }
       split_custody_lot: {
