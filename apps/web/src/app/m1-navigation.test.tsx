@@ -48,6 +48,10 @@ vi.mock('@/features/audit/audit-center-page', () => ({
   AuditCenterPage: () => <h1>Auditoria</h1>,
 }))
 
+vi.mock('@/features/master-data/master-data-page', () => ({
+  MasterDataPage: () => <h1>Cadastros</h1>,
+}))
+
 const membership: ScopeMembership = {
   membershipId: 'membership-id',
   roleId: 'role-id',
@@ -64,6 +68,7 @@ const cases = [
   ['/documentos', 'Documentos'],
   ['/pendencias', 'Pendências'],
   ['/auditoria', 'Auditoria'],
+  ['/cadastros', 'Cadastros'],
 ] as const
 
 beforeEach(() => {
