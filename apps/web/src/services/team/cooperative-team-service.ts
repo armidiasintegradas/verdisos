@@ -40,20 +40,35 @@ export async function loadCooperativeTeam(
   }))
 }
 
+export type CooperativeInviteResult = {
+  invited: boolean
+  existingUser: boolean
+  userId: string
+  membershipId: string
+}
+
 export async function inviteCooperativeUser(
   scope: ActiveScope,
   input: { email: string; roleCode: CooperativeTeamRole },
-): Promise<void> {
-  const { error } = await supabase.functions.invoke('invite-cooperative-user', {
-    body: {
-      email: input.email.trim().toLowerCase(),
-      organizationId: scope.organizationId,
-      unitId: scope.unitId,
-      roleCode: input.roleCode,
+): Promise<CooperativeInviteResult> {
+  const { data, error } = await supabase.functions.invoke<CooperativeInviteResult>(
+    'invite-cooperative-user',
+    {
+      body: {
+        email: input.email.trim().toLowerCase(),
+        organizationId: scope.organizationId,
+        unitId: scope.unitId,
+        roleCode: input.roleCode,
+      },
     },
-  })
+  )
 
   if (error) throw error
+  if (!data?.membershipId || !data.userId) {
+    throw new Error('O acesso não foi confirmado pelo servidor.')
+  }
+
+  return data
 }
 
 export async function setCooperativeMembershipStatus(
