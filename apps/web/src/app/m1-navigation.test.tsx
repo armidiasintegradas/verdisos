@@ -5,6 +5,23 @@ import { ScopeProvider, type ScopeMembership } from '@/features/scope/scope-prov
 import { RouterProvider, useRouter } from './router'
 import { AppRoutes, matchDocumentDetailPath, matchReceiptFlowPath, matchSaleFlowPath } from './routes'
 
+
+vi.mock('@/features/auth/auth-provider', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'maria@cooperativa.org', user_metadata: {} },
+    signOut: vi.fn(),
+  }),
+}))
+
+vi.mock('@/ui/layout/load-operational-identity', () => ({
+  loadOperationalIdentity: vi.fn().mockResolvedValue({
+    displayName: 'Maria Silva',
+    roleName: 'Gestora',
+    organizationName: 'Cooperativa Recife',
+    unitName: 'Galpão 01',
+  }),
+}))
+
 vi.mock('@/features/scope/scope-selector', () => ({
   ScopeSelector: () => <span>Cooperativa Demo · M1 Pilot</span>,
 }))
@@ -60,11 +77,7 @@ test.each(cases)('renders %s with the correct active navigation item', (path, la
     </RouterProvider>
   )
 
-  render(
-    path === '/documentos'
-      ? <ScopeProvider loadMemberships={async () => [membership]}>{routes}</ScopeProvider>
-      : routes,
-  )
+  render(<ScopeProvider loadMemberships={async () => [membership]}>{routes}</ScopeProvider>)
 
   expect(screen.getByRole('heading', { name: label })).toBeInTheDocument()
 
@@ -135,7 +148,7 @@ test.each([
   ['/recebimentos/novo?step=dados', 'bootstrap'],
   ['/recebimentos/novo/abc?step=comprovacao', 'abc'],
 ] as const)('renders the receipt flow route for %s', (path, expectedMovement) => {
-  render(<RouterProvider initialPath={path}><AppRoutes /></RouterProvider>)
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
   expect(screen.getByTestId('receipt-flow-page')).toHaveTextContent(expectedMovement)
 })
 
@@ -169,6 +182,6 @@ test('matches one document detail path segment', () => {
 })
 
 test('renders the document detail route directly', () => {
-  render(<RouterProvider initialPath="/documentos/document-id"><AppRoutes /></RouterProvider>)
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath="/documentos/document-id"><AppRoutes /></RouterProvider></ScopeProvider>)
   expect(screen.getByTestId('document-detail-page')).toHaveTextContent('document-id')
 })
