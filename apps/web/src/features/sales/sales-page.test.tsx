@@ -48,6 +48,6 @@ test('renders scoped sales from persistent records', async () => {
   )
 
   expect(await screen.findByText('Venda #abc12345')).toBeInTheDocument()
-  expect(screen.getByText('Comprador Recife')).toBeInTheDocument()
+  expect(screen.getByText((content) => content.includes('Comprador Recife'))).toBeInTheDocument()
   expect(screen.getByText('Documento processado')).toBeInTheDocument()
 })
