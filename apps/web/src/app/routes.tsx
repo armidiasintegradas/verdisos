@@ -2,6 +2,7 @@ import { AuditCenterPage } from '@/features/audit/audit-center-page'
 import { DocumentDetailPage } from '@/features/documents/document-detail-page'
 import { DocumentsPage } from '@/features/documents/documents-page'
 import { HomePage } from '@/features/home/home-page'
+import { MasterDataPage } from '@/features/master-data/master-data-page'
 import { PendingPage } from '@/features/pending/pending-page'
 import { ReceiptFlowPage } from '@/features/receipts/receipt-flow/receipt-flow-page'
 import { ReceiptsPage } from '@/features/receipts/receipts-page'
@@ -60,6 +61,8 @@ export function AppRoutes() {
         return <PendingPage />
       case '/auditoria':
         return <AuditCenterPage />
+      case '/cadastros':
+        return <MasterDataPage />
       case '/':
       default:
         return <HomePage />
