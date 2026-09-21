@@ -58,9 +58,13 @@ export function TeamPage() {
     setSuccessMessage(null)
 
     try {
-      await inviteCooperativeUser(activeScope, { email, roleCode })
+      const result = await inviteCooperativeUser(activeScope, { email, roleCode })
       setEmail('')
-      setSuccessMessage('Convite enviado e acesso preparado para o novo usuário.')
+      setSuccessMessage(
+        result.existingUser
+          ? 'Usuário existente vinculado à cooperativa com sucesso.'
+          : 'Convite enviado e acesso preparado para o novo usuário.',
+      )
       await reload()
     } catch (error) {
       setErrorMessage(
