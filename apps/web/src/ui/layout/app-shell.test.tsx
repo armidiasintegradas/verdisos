@@ -34,6 +34,15 @@ vi.mock('./load-operational-identity', () => ({
     roleName: 'Gestora',
     organizationName: 'Cooperativa Recife',
     unitName: 'Galpão 01',
+    permissionCodes: [
+      'movement.read',
+      'stock.read',
+      'sale.create',
+      'evidence.read',
+      'evidence.validate',
+      'audit.read',
+      'scope.manage',
+    ],
   }),
 }))
 
