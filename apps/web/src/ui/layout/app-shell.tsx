@@ -95,7 +95,7 @@ export function AppShell({ children }: AppShellProps) {
   const environmentName = organizationName
   const operationLabel = isOnline
     ? `OPERAÇÃO ATIVA · ${unitName.toUpperCase()}`
-    : 'MODO OFFLINE · CACHE LOCAL'
+    : 'SEM CONEXÃO · DADOS ONLINE INDISPONÍVEIS'
 
   return (
     <div className="v-shell">
