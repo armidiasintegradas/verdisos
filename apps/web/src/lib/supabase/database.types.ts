@@ -1563,6 +1563,15 @@ export type Database = {
       }
     }
     Functions: {
+      assign_cooperative_membership_m1: {
+        Args: {
+          p_organization_id: string
+          p_role_code: string
+          p_unit_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       bootstrap_cooperative_account: {
         Args: {
           p_display_name?: string
