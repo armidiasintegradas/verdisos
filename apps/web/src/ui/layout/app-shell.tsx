@@ -16,6 +16,7 @@ const navItems = [
   ['Documentos', '/documentos', 'document'],
   ['Pendências', '/pendencias', 'pending'],
   ['Auditoria', '/auditoria', 'search'],
+  ['Cadastros', '/cadastros', 'settings'],
 ] as const satisfies ReadonlyArray<readonly [string, string, IconName]>
 
 type AppShellProps = {
