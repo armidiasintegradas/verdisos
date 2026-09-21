@@ -1626,6 +1626,14 @@ export type Database = {
         }
         Returns: string
       }
+      create_counterparty_m1: {
+        Args: {
+          p_external_name: string
+          p_external_tax_id?: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
       create_custody_lot: {
         Args: {
           p_justification: string
@@ -1635,14 +1643,6 @@ export type Database = {
           p_source_subject_id: string
           p_tenant_id: string
           p_unit_id: string
-        }
-        Returns: string
-      }
-      create_counterparty_m1: {
-        Args: {
-          p_external_name: string
-          p_external_tax_id?: string
-          p_organization_id: string
         }
         Returns: string
       }
