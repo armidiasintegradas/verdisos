@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider'
 import { LoginPage } from '@/features/auth/login-page'
+import { UpdatePasswordPage } from '@/features/auth/update-password-page'
 import { ScopeProvider, useScope } from '@/features/scope/scope-provider'
 
 function ScopeBoundary({ children }: { children: ReactNode }) {
@@ -23,10 +24,14 @@ function ScopeBoundary({ children }: { children: ReactNode }) {
 }
 
 function SessionBoundary({ children }: { children: ReactNode }) {
-  const { loading, user } = useAuth()
+  const { loading, user, recoveryMode } = useAuth()
 
   if (loading) {
     return <main><p>Carregando sessão…</p></main>
+  }
+
+  if (recoveryMode) {
+    return <UpdatePasswordPage />
   }
 
   if (!user) {
