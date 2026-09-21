@@ -1680,6 +1680,22 @@ export type Database = {
           total_amount: number
         }[]
       }
+      list_cooperative_team_m1: {
+        Args: {
+          p_organization_id: string
+          p_unit_id?: string
+        }
+        Returns: {
+          display_name: string
+          email: string
+          membership_id: string
+          role_code: string
+          role_name: string
+          status: Database["public"]["Enums"]["membership_status"]
+          unit_id: string
+          user_id: string
+        }[]
+      }
       merge_custody_lots: {
         Args: {
           p_correlation_id: string
@@ -1743,6 +1759,13 @@ export type Database = {
           p_exception_id: string
           p_justification: string
           p_result: string
+        }
+        Returns: undefined
+      }
+      set_cooperative_membership_status_m1: {
+        Args: {
+          p_membership_id: string
+          p_status: string
         }
         Returns: undefined
       }
