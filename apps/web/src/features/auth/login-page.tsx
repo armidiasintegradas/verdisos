@@ -5,12 +5,15 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [resetMessage, setResetMessage] = useState<string | null>(null)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitting(true)
     setErrorMessage(null)
+    setResetMessage(null)
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -18,6 +21,29 @@ export function LoginPage() {
       setErrorMessage(error.message)
       setSubmitting(false)
     }
+  }
+
+  async function handlePasswordReset() {
+    if (!email.trim()) {
+      setErrorMessage('Informe seu e-mail para recuperar a senha.')
+      return
+    }
+
+    setResetting(true)
+    setErrorMessage(null)
+    setResetMessage(null)
+
+    const redirectTo = new URL(import.meta.env.BASE_URL, window.location.href).toString()
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+
+    if (error) {
+      setErrorMessage(error.message)
+      setResetting(false)
+      return
+    }
+
+    setResetMessage('Se existir uma conta para este e-mail, enviaremos as instruções de recuperação.')
+    setResetting(false)
   }
 
   return (
@@ -47,10 +73,14 @@ export function LoginPage() {
             onChange={(event) => setPassword(event.target.value)}
           />
         </label>
-        <button type="submit" disabled={submitting}>
+        <button type="submit" disabled={submitting || resetting}>
           {submitting ? 'Entrando…' : 'Entrar'}
         </button>
+        <button type="button" disabled={submitting || resetting} onClick={() => void handlePasswordReset()}>
+          {resetting ? 'Enviando…' : 'Esqueci minha senha'}
+        </button>
         {errorMessage ? <p role="alert">{errorMessage}</p> : null}
+        {resetMessage ? <p role="status">{resetMessage}</p> : null}
       </form>
     </main>
   )
