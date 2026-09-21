@@ -9,16 +9,18 @@ import { loadOperationalIdentity, type OperationalIdentity } from './load-operat
 import './app-shell.css'
 
 const navItems = [
-  ['Início', '/', 'home'],
-  ['Recebimentos', '/recebimentos', 'receive'],
-  ['Estoque', '/estoque', 'stock'],
-  ['Vendas', '/vendas', 'sales'],
-  ['Documentos', '/documentos', 'document'],
-  ['Pendências', '/pendencias', 'pending'],
-  ['Auditoria', '/auditoria', 'search'],
-  ['Cadastros', '/cadastros', 'settings'],
-  ['Equipe', '/equipe', 'user'],
-] as const satisfies ReadonlyArray<readonly [string, string, IconName]>
+  ['Início', '/', 'home', null],
+  ['Recebimentos', '/recebimentos', 'receive', 'movement.read'],
+  ['Estoque', '/estoque', 'stock', 'stock.read'],
+  ['Vendas', '/vendas', 'sales', 'sale.create'],
+  ['Documentos', '/documentos', 'document', 'evidence.read'],
+  ['Pendências', '/pendencias', 'pending', 'evidence.validate'],
+  ['Auditoria', '/auditoria', 'search', 'audit.read'],
+  ['Cadastros', '/cadastros', 'settings', 'scope.manage'],
+  ['Equipe', '/equipe', 'user', 'scope.manage'],
+] as const satisfies ReadonlyArray<
+  readonly [string, string, IconName, string | null]
+>
 
 type AppShellProps = {
   children: ReactNode
@@ -93,6 +95,10 @@ export function AppShell({ children }: AppShellProps) {
   const organizationName = identity?.organizationName || 'Organização'
   const unitName = identity?.unitName || 'Unidade'
   const environmentName = organizationName
+  const permissionCodes = identity?.permissionCodes ?? []
+  const visibleNavItems = navItems.filter(([, , , requiredPermission]) =>
+    requiredPermission === null || permissionCodes.includes(requiredPermission),
+  )
   const operationLabel = isOnline
     ? `OPERAÇÃO ATIVA · ${unitName.toUpperCase()}`
     : 'SEM CONEXÃO · DADOS ONLINE INDISPONÍVEIS'
@@ -130,7 +136,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
 
           <nav className="v-shell__nav" aria-label="Navegação principal">
-            {navItems.map(([label, href, icon]) => {
+            {visibleNavItems.map(([label, href, icon]) => {
               const active = pathname === href
               return (
                 <RouterLink
