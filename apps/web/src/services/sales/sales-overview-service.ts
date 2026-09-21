@@ -83,8 +83,8 @@ export async function loadSalesOverview(scope: ActiveScope): Promise<SalesOvervi
       : null
 
     let documentState: SaleListItem['documentState'] = 'missing'
-    if (extraction === 'processed') documentState = 'processed'
-    else if (extraction === 'failed') documentState = 'failed'
+    if (extraction === 'rejected') documentState = 'failed'
+    else if (extraction === 'accepted' || extraction === 'needs_review') documentState = 'processed'
     else if (sale.fiscal_document_id) documentState = 'processing'
 
     return {
