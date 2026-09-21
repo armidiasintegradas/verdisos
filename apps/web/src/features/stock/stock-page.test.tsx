@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
+import { RouterProvider } from '@/app/router'
 import { ScopeProvider, type ScopeMembership } from '@/features/scope/scope-provider'
 import { StockPage } from './stock-page'
 
@@ -35,7 +36,9 @@ test('renders scoped stock from persistent ledger data', async () => {
 
   render(
     <ScopeProvider loadMemberships={async () => [membership]}>
-      <StockPage />
+      <RouterProvider initialPath="/estoque">
+        <StockPage />
+      </RouterProvider>
     </ScopeProvider>,
   )
 
