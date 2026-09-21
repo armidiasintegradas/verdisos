@@ -9,6 +9,7 @@ import { ReceiptsPage } from '@/features/receipts/receipts-page'
 import { SaleFlowPage } from '@/features/sales/sale-flow/sale-flow-page'
 import { SalesPage } from '@/features/sales/sales-page'
 import { StockPage } from '@/features/stock/stock-page'
+import { TeamPage } from '@/features/team/team-page'
 import { AppShell } from '@/ui/layout/app-shell'
 import { useRouter } from './router'
 
@@ -63,6 +64,8 @@ export function AppRoutes() {
         return <AuditCenterPage />
       case '/cadastros':
         return <MasterDataPage />
+      case '/equipe':
+        return <TeamPage />
       case '/':
       default:
         return <HomePage />
