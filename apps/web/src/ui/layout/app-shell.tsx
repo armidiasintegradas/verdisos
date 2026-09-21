@@ -24,9 +24,13 @@ const navItems = [
 
 type AppShellProps = {
   children: ReactNode
+  requiredPermission?: string | null
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({
+  children,
+  requiredPermission = null,
+}: AppShellProps) {
   const { pathname } = useRouter()
   const { user, signOut } = useAuth()
   const { activeScope, memberships } = useScope()
@@ -102,6 +106,33 @@ export function AppShell({ children }: AppShellProps) {
   const operationLabel = isOnline
     ? `OPERAÇÃO ATIVA · ${unitName.toUpperCase()}`
     : 'SEM CONEXÃO · DADOS ONLINE INDISPONÍVEIS'
+
+  const content = (() => {
+    if (!requiredPermission) return children
+
+    if (!identity && !identityError) {
+      return <p>Validando permissões do seu acesso…</p>
+    }
+
+    if (identityError) {
+      return (
+        <p role="alert">
+          Não foi possível validar as permissões desta sessão. Atualize a página ou entre novamente.
+        </p>
+      )
+    }
+
+    if (!permissionCodes.includes(requiredPermission)) {
+      return (
+        <section>
+          <h1>Acesso não autorizado</h1>
+          <p>Seu perfil não possui permissão para acessar este módulo.</p>
+        </section>
+      )
+    }
+
+    return children
+  })()
 
   return (
     <div className="v-shell">
@@ -226,7 +257,7 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </header>
 
-        <main className="v-shell__content">{children}</main>
+        <main className="v-shell__content">{content}</main>
       </div>
     </div>
   )
