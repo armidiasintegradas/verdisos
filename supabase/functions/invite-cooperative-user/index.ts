@@ -13,6 +13,32 @@ function json(body: unknown, status = 200) {
   })
 }
 
+
+async function findUserByEmail(
+  adminClient: ReturnType<typeof createClient>,
+  email: string,
+) {
+  const perPage = 1000
+
+  for (let page = 1; page <= 100; page += 1) {
+    const { data, error } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage,
+    })
+
+    if (error) throw error
+
+    const found = data.users.find(
+      (user) => user.email?.trim().toLowerCase() === email,
+    )
+
+    if (found) return found
+    if (data.users.length < perPage) return null
+  }
+
+  throw new Error('User directory pagination limit exceeded.')
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -99,26 +125,44 @@ Deno.serve(async (request) => {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
-  const redirectTo = appUrl
-  const { data: inviteData, error: inviteError } =
-    await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo })
+  let targetUser
+  let createdByThisRequest = false
 
-  if (inviteError || !inviteData.user) {
+  try {
+    targetUser = await findUserByEmail(adminClient, email)
+  } catch (error) {
     return json(
       {
-        error: 'invite_failed',
-        message: inviteError?.message ?? 'User was not created.',
+        error: 'user_lookup_failed',
+        message: error instanceof Error ? error.message : 'User lookup failed.',
       },
-      400,
+      500,
     )
   }
 
-  const invitedUserId = inviteData.user.id
+  if (!targetUser) {
+    const redirectTo = appUrl
+    const { data: inviteData, error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo })
+
+    if (inviteError || !inviteData.user) {
+      return json(
+        {
+          error: 'invite_failed',
+          message: inviteError?.message ?? 'User was not created.',
+        },
+        400,
+      )
+    }
+
+    targetUser = inviteData.user
+    createdByThisRequest = true
+  }
 
   const { data: membershipId, error: membershipError } = await callerClient.rpc(
     'assign_cooperative_membership_m1',
     {
-      p_user_id: invitedUserId,
+      p_user_id: targetUser.id,
       p_organization_id: organizationId,
       p_unit_id: unitId,
       p_role_code: roleCode,
@@ -126,9 +170,11 @@ Deno.serve(async (request) => {
   )
 
   if (membershipError || !membershipId) {
-    // The invited account was created by this request but could not be authorized
-    // into the requested cooperative scope. Remove the orphan before returning.
-    await adminClient.auth.admin.deleteUser(invitedUserId)
+    if (createdByThisRequest) {
+      // The invited account was created by this request but could not be authorized
+      // into the requested cooperative scope. Remove the orphan before returning.
+      await adminClient.auth.admin.deleteUser(targetUser.id)
+    }
 
     return json(
       {
@@ -140,8 +186,9 @@ Deno.serve(async (request) => {
   }
 
   return json({
-    invited: true,
-    userId: invitedUserId,
+    invited: createdByThisRequest,
+    existingUser: !createdByThisRequest,
+    userId: targetUser.id,
     membershipId,
   })
 })
