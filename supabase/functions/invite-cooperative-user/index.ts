@@ -76,11 +76,30 @@ Deno.serve(async (request) => {
     return json({ error: 'invalid_session' }, 401)
   }
 
+  const { data: preflightAllowed, error: preflightError } = await callerClient.rpc(
+    'authorize_cooperative_invitation_m1',
+    {
+      p_organization_id: organizationId,
+      p_unit_id: unitId,
+      p_role_code: roleCode,
+    },
+  )
+
+  if (preflightError || preflightAllowed !== true) {
+    return json(
+      {
+        error: 'invitation_not_authorized',
+        message: preflightError?.message ?? 'Invitation is not authorized.',
+      },
+      403,
+    )
+  }
+
   const adminClient = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
-  const redirectTo = new URL('/', appUrl).toString()
+  const redirectTo = appUrl
   const { data: inviteData, error: inviteError } =
     await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo })
 
