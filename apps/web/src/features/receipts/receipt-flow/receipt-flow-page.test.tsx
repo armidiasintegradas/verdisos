@@ -76,7 +76,8 @@ function renderFlow(path: string) {
   )
 }
 
-function fillData() {
+async function fillData() {
+  await screen.findByRole('option', { name: 'Empresa Demo' })
   fireEvent.change(screen.getByLabelText('Origem'), { target: { value: 'source-1' } })
   fireEvent.change(screen.getByLabelText('Material'), { target: { value: 'material-1' } })
   fireEvent.change(screen.getByLabelText('Peso/quantidade'), { target: { value: '480' } })
@@ -156,7 +157,7 @@ describe('ReceiptFlowPage', () => {
 
   it('creates a draft on first Dados continue and navigates to movement comprovacao', async () => {
     renderFlow('/recebimentos/novo?step=dados')
-    fillData()
+    await fillData()
     fireEvent.click(screen.getByRole('button', { name: 'CONTINUAR' }))
 
     await waitFor(() => {
