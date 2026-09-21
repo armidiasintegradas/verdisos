@@ -20,12 +20,16 @@ vi.mock('@/ui/layout/load-operational-identity', () => ({
     organizationName: 'Cooperativa Recife',
     unitName: 'Galpão 01',
     permissionCodes: [
+      'movement.create',
       'movement.read',
-      'stock.read',
-      'sale.create',
+      'movement.correct',
+      'evidence.upload',
       'evidence.read',
       'evidence.validate',
+      'stock.read',
+      'sale.create',
       'audit.read',
+      'report.generate',
       'scope.manage',
     ],
   }),
@@ -98,7 +102,7 @@ test.each(cases)('renders %s with the correct active navigation item', async (pa
 
   render(<ScopeProvider loadMemberships={async () => [membership]}>{routes}</ScopeProvider>)
 
-  expect(screen.getByRole('heading', { name: label })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: label })).toBeInTheDocument()
 
   const activeLink = (await screen.findAllByRole('link', { name: label }))
     .find((link) => link.getAttribute('aria-current') === 'page')
