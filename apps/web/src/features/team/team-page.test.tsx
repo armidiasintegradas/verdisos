@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
+import { RouterProvider } from '@/app/router'
 import { TeamPage } from './team-page'
 
 const mocks = vi.hoisted(() => ({
@@ -23,6 +24,14 @@ vi.mock('@/services/team/cooperative-team-service', () => ({
   inviteCooperativeUser: mocks.inviteCooperativeUser,
   setCooperativeMembershipStatus: mocks.setCooperativeMembershipStatus,
 }))
+
+function renderTeam() {
+  return render(
+    <RouterProvider initialPath="/equipe">
+      <TeamPage />
+    </RouterProvider>,
+  )
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -53,7 +62,7 @@ beforeEach(() => {
 })
 
 test('loads team and sends a scoped invite', async () => {
-  render(<TeamPage />)
+  renderTeam()
 
   expect(await screen.findByText('Maria Gestora')).toBeInTheDocument()
 
@@ -82,7 +91,7 @@ test('loads team and sends a scoped invite', async () => {
 })
 
 test('suspends and reactivates memberships through controlled service', async () => {
-  render(<TeamPage />)
+  renderTeam()
 
   expect(await screen.findByText('Maria Gestora')).toBeInTheDocument()
 
