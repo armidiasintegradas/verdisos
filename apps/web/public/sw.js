@@ -1,4 +1,4 @@
-const CACHE_NAME = 'verdis-m1-v1'
+const CACHE_NAME = 'verdis-os-v2'
 
 self.addEventListener('install', (event) => {
   const scope = self.registration.scope
