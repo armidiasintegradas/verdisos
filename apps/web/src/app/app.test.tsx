@@ -21,6 +21,7 @@ vi.mock('@/ui/layout/load-operational-identity', () => ({
     roleName: 'Gestora',
     organizationName: 'Cooperativa Recife',
     unitName: 'Galpão 01',
+    permissionCodes: ['evidence.read'],
   }),
 }))
 
@@ -64,6 +65,6 @@ test('renders documents inside the canonical shell', async () => {
   )
 
   expect(screen.getByRole('heading', { name: 'Documentos' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
+  expect(await screen.findByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
   expect((await screen.findAllByText('4 documentos')).length).toBeGreaterThan(0)
 })
