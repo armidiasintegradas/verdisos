@@ -1,8 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { RouterLink, useRouter } from '@/app/router'
+import { useAuth } from '@/features/auth/auth-provider'
 import { ScopeSelector } from '@/features/scope/scope-selector'
+import { useScope } from '@/features/scope/scope-provider'
 import { Avatar } from '@/ui/components/avatar'
 import { Icon, type IconName } from '@/ui/components/icon'
+import { loadOperationalIdentity, type OperationalIdentity } from './load-operational-identity'
 import './app-shell.css'
 
 const navItems = [
@@ -21,8 +24,25 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const { pathname } = useRouter()
+  const { user, signOut } = useAuth()
+  const { activeScope, memberships } = useScope()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true))
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  )
+  const [identity, setIdentity] = useState<OperationalIdentity | null>(null)
+  const [identityError, setIdentityError] = useState(false)
+
+  const activeMembership = useMemo(
+    () =>
+      memberships.find(
+        (membership) =>
+          membership.tenantId === activeScope?.tenantId &&
+          membership.organizationId === activeScope?.organizationId &&
+          membership.unitId === activeScope?.unitId,
+      ) ?? null,
+    [memberships, activeScope],
+  )
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
@@ -34,6 +54,46 @@ export function AppShell({ children }: AppShellProps) {
       window.removeEventListener('offline', handleOffline)
     }
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!user || !activeScope || !activeMembership) {
+      setIdentity(null)
+      setIdentityError(false)
+      return
+    }
+
+    setIdentity(null)
+    setIdentityError(false)
+
+    void loadOperationalIdentity(user.id, activeMembership.roleId, activeScope)
+      .then((nextIdentity) => {
+        if (!cancelled) setIdentity(nextIdentity)
+      })
+      .catch(() => {
+        if (!cancelled) setIdentityError(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [user, activeScope, activeMembership])
+
+  const displayName =
+    identity?.displayName ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split('@')[0] ||
+    'Usuário'
+
+  const roleName = identity?.roleName || 'Acesso operacional'
+  const organizationName = identity?.organizationName || 'Organização'
+  const unitName = identity?.unitName || 'Unidade'
+  const environmentName = organizationName
+  const operationLabel = isOnline
+    ? `OPERAÇÃO ATIVA · ${unitName.toUpperCase()}`
+    : 'MODO OFFLINE · CACHE LOCAL'
 
   return (
     <div className="v-shell">
@@ -58,9 +118,13 @@ export function AppShell({ children }: AppShellProps) {
               <Icon name="close" size={20} />
             </button>
           </div>
+
           <div className="v-shell__environment">
             <span className="v-shell__environment-dot" aria-hidden="true" />
-            <span><small>AMBIENTE</small>M1 Cooperative Pilot</span>
+            <span>
+              <small>AMBIENTE</small>
+              {environmentName}
+            </span>
           </div>
 
           <nav className="v-shell__nav" aria-label="Navegação principal">
@@ -74,9 +138,13 @@ export function AppShell({ children }: AppShellProps) {
                   aria-current={active ? 'page' : undefined}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <span className="v-shell__nav-icon"><Icon name={icon} size={19} /></span>
+                  <span className="v-shell__nav-icon">
+                    <Icon name={icon} size={19} />
+                  </span>
                   <span>{label}</span>
-                  {label === 'Pendências' ? <span className="v-shell__nav-count" aria-hidden="true">3</span> : null}
+                  {label === 'Pendências' ? (
+                    <span className="v-shell__nav-count" aria-hidden="true">3</span>
+                  ) : null}
                 </RouterLink>
               )
             })}
@@ -85,8 +153,18 @@ export function AppShell({ children }: AppShellProps) {
 
         <div className="v-shell__sidebar-user">
           <Avatar size={32} />
-          <span className="v-shell__sidebar-user-copy"><strong>Maria</strong><small>Gestora</small></span>
-          <span className="v-shell__settings" aria-label="Configurações" role="img"><Icon name="settings" size={18} /></span>
+          <span className="v-shell__sidebar-user-copy">
+            <strong>{displayName}</strong>
+            <small>{roleName}</small>
+          </span>
+          <button
+            className="v-shell__settings"
+            aria-label="Sair da sessão"
+            type="button"
+            onClick={() => void signOut()}
+          >
+            <Icon name="settings" size={18} />
+          </button>
         </div>
       </aside>
 
@@ -103,15 +181,21 @@ export function AppShell({ children }: AppShellProps) {
           <div className="v-shell__mobile-brand">verdis.</div>
 
           <div className="v-shell__unit">
-
-            <span className="v-shell__header-icon"><Icon name="building" size={18} /></span>
-            <span><small>UNIDADE OPERACIONAL</small><strong>Cooperativa Demo · M1 Pilot</strong></span>
-            <div className="v-shell__scope-control"><ScopeSelector /></div>
+            <span className="v-shell__header-icon">
+              <Icon name="building" size={18} />
+            </span>
+            <span>
+              <small>UNIDADE OPERACIONAL</small>
+              <strong>{organizationName} · {unitName}</strong>
+            </span>
+            <div className="v-shell__scope-control">
+              <ScopeSelector />
+            </div>
           </div>
 
           <div className={`v-shell__operation${!isOnline ? ' is-offline' : ''}`}>
             <span className="v-shell__operation-dot" aria-hidden="true" />
-            <span>{isOnline ? 'OPERAÇÃO ATIVA · GALPÃO 01' : 'MODO OFFLINE · CACHE LOCAL'}</span>
+            <span>{operationLabel}</span>
           </div>
 
           <label className="v-shell__search">
@@ -127,7 +211,13 @@ export function AppShell({ children }: AppShellProps) {
 
           <div className="v-shell__identity">
             <Avatar />
-            <span><strong>Maria — Gestora</strong><small><i aria-hidden="true" />Sessão conectada</small></span>
+            <span>
+              <strong>{displayName} — {roleName}</strong>
+              <small>
+                <i aria-hidden="true" />
+                {identityError ? 'Sessão conectada · dados de perfil indisponíveis' : 'Sessão conectada'}
+              </small>
+            </span>
           </div>
         </header>
 
