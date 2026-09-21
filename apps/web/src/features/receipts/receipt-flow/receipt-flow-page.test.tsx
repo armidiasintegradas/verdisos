@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   uploadReceiptEvidence: vi.fn(),
   loadReceiptConference: vi.fn(),
   confirmReceipt: vi.fn(),
+  loadReceiptFormOptions: vi.fn(),
 }))
 
 vi.mock('@/features/scope/scope-provider', () => ({
@@ -39,6 +40,10 @@ vi.mock('@/services/receipts/receipt-conference-service', () => ({
 
 vi.mock('@/services/receipts/confirm-receipt-service', () => ({
   confirmReceipt: mocks.confirmReceipt,
+}))
+
+vi.mock('@/services/receipts/receipt-form-options-service', () => ({
+  loadReceiptFormOptions: mocks.loadReceiptFormOptions,
 }))
 
 import { ReceiptFlowPage } from './receipt-flow-page'
@@ -71,9 +76,10 @@ function renderFlow(path: string) {
   )
 }
 
-function fillData() {
-  fireEvent.change(screen.getByLabelText('Origem'), { target: { value: 'Empresa Demo' } })
-  fireEvent.change(screen.getByLabelText('Material'), { target: { value: 'Papelão Ondulado' } })
+async function fillData() {
+  await screen.findByRole('option', { name: 'Empresa Demo' })
+  fireEvent.change(screen.getByLabelText('Origem'), { target: { value: 'source-1' } })
+  fireEvent.change(screen.getByLabelText('Material'), { target: { value: 'material-1' } })
   fireEvent.change(screen.getByLabelText('Peso/quantidade'), { target: { value: '480' } })
   fireEvent.change(screen.getByLabelText('Data e hora'), {
     target: { value: '2026-09-15T18:20' },
@@ -83,10 +89,10 @@ function fillData() {
 function draft(status: 'draft' | 'posted' = 'draft') {
   return {
     id: movementId,
-    materialId: 'Papelão Ondulado',
+    materialId: 'material-1',
     quantityKg: 480,
     occurredAt: '2026-09-15T21:20:00.000Z',
-    sourceCounterpartyId: 'Empresa Demo',
+    sourceCounterpartyId: 'source-1',
     status,
   }
 }
@@ -129,6 +135,10 @@ beforeEach(() => {
     originalFilename: 'Ticket_009182.jpg',
   })
   mocks.loadReceiptConference.mockResolvedValue(processingConference())
+  mocks.loadReceiptFormOptions.mockResolvedValue({
+    origins: [{ id: 'source-1', label: 'Empresa Demo' }],
+    materials: [{ id: 'material-1', label: 'Papelão Ondulado' }],
+  })
   mocks.confirmReceipt.mockResolvedValue({
     movementId,
     adoptedQuantityKg: 480,
@@ -138,14 +148,16 @@ beforeEach(() => {
 })
 
 describe('ReceiptFlowPage', () => {
-  it('starts at Dados from /recebimentos/novo?step=dados', () => {
+  it('starts at Dados from /recebimentos/novo?step=dados', async () => {
     renderFlow('/recebimentos/novo?step=dados')
     expect(screen.getByRole('heading', { name: 'Dados do recebimento' })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: 'Empresa Demo' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Papelão Ondulado' })).toBeInTheDocument()
   })
 
   it('creates a draft on first Dados continue and navigates to movement comprovacao', async () => {
     renderFlow('/recebimentos/novo?step=dados')
-    fillData()
+    await fillData()
     fireEvent.click(screen.getByRole('button', { name: 'CONTINUAR' }))
 
     await waitFor(() => {

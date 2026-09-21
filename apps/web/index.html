@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Verdis — gestão da circularidade e impacto socioambiental" />
-    <title>Verdis — M1 Cooperative Pilot</title>
+    <title>Verdis — Gestão da Circularidade</title>
     <meta name="theme-color" content="#536938" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -21,6 +21,19 @@
 
   </head>
   <body>
+    <script>
+      ;(() => {
+        try {
+          const redirect = window.sessionStorage.getItem('verdis.pages.redirect')
+          if (redirect) {
+            window.sessionStorage.removeItem('verdis.pages.redirect')
+            window.history.replaceState({}, '', redirect)
+          }
+        } catch {
+          // Route recovery is best-effort; the application still boots at the root.
+        }
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

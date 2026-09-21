@@ -5,8 +5,38 @@ import { ScopeProvider, type ScopeMembership } from '@/features/scope/scope-prov
 import { RouterProvider, useRouter } from './router'
 import { AppRoutes, matchDocumentDetailPath, matchReceiptFlowPath, matchSaleFlowPath } from './routes'
 
+
+vi.mock('@/features/auth/auth-provider', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'maria@cooperativa.org', user_metadata: {} },
+    signOut: vi.fn(),
+  }),
+}))
+
+vi.mock('@/ui/layout/load-operational-identity', () => ({
+  loadOperationalIdentity: vi.fn().mockResolvedValue({
+    displayName: 'Maria Silva',
+    roleName: 'Gestora',
+    organizationName: 'Cooperativa Recife',
+    unitName: 'Galpão 01',
+    permissionCodes: [
+      'movement.create',
+      'movement.read',
+      'movement.correct',
+      'evidence.upload',
+      'evidence.read',
+      'evidence.validate',
+      'stock.read',
+      'sale.create',
+      'audit.read',
+      'report.generate',
+      'scope.manage',
+    ],
+  }),
+}))
+
 vi.mock('@/features/scope/scope-selector', () => ({
-  ScopeSelector: () => <span>Cooperativa Demo · M1 Pilot</span>,
+  ScopeSelector: () => <span>Escopo ativo</span>,
 }))
 
 vi.mock('@/features/receipts/receipt-flow/receipt-flow-page', () => ({
@@ -31,6 +61,14 @@ vi.mock('@/features/audit/audit-center-page', () => ({
   AuditCenterPage: () => <h1>Auditoria</h1>,
 }))
 
+vi.mock('@/features/master-data/master-data-page', () => ({
+  MasterDataPage: () => <h1>Cadastros</h1>,
+}))
+
+vi.mock('@/features/team/team-page', () => ({
+  TeamPage: () => <h1>Equipe</h1>,
+}))
+
 const membership: ScopeMembership = {
   membershipId: 'membership-id',
   roleId: 'role-id',
@@ -47,29 +85,26 @@ const cases = [
   ['/documentos', 'Documentos'],
   ['/pendencias', 'Pendências'],
   ['/auditoria', 'Auditoria'],
+  ['/cadastros', 'Cadastros'],
+  ['/equipe', 'Equipe'],
 ] as const
 
 beforeEach(() => {
   window.history.replaceState({}, '', '/')
 })
 
-test.each(cases)('renders %s with the correct active navigation item', (path, label) => {
+test.each(cases)('renders %s with the correct active navigation item', async (path, label) => {
   const routes = (
     <RouterProvider initialPath={path}>
       <AppRoutes />
     </RouterProvider>
   )
 
-  render(
-    path === '/documentos'
-      ? <ScopeProvider loadMemberships={async () => [membership]}>{routes}</ScopeProvider>
-      : routes,
-  )
+  render(<ScopeProvider loadMemberships={async () => [membership]}>{routes}</ScopeProvider>)
 
-  expect(screen.getByRole('heading', { name: label })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: label })).toBeInTheDocument()
 
-  const activeLink = screen
-    .getAllByRole('link', { name: label })
+  const activeLink = (await screen.findAllByRole('link', { name: label }))
     .find((link) => link.getAttribute('aria-current') === 'page')
 
   expect(activeLink).toBeDefined()
@@ -134,9 +169,9 @@ test.each([
 test.each([
   ['/recebimentos/novo?step=dados', 'bootstrap'],
   ['/recebimentos/novo/abc?step=comprovacao', 'abc'],
-] as const)('renders the receipt flow route for %s', (path, expectedMovement) => {
-  render(<RouterProvider initialPath={path}><AppRoutes /></RouterProvider>)
-  expect(screen.getByTestId('receipt-flow-page')).toHaveTextContent(expectedMovement)
+] as const)('renders the receipt flow route for %s', async (path, expectedMovement) => {
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
+  expect(await screen.findByTestId('receipt-flow-page')).toHaveTextContent(expectedMovement)
 })
 
 test.each([
@@ -157,9 +192,9 @@ test.each([
 test.each([
   ['/vendas/nova?step=dados', 'bootstrap'],
   ['/vendas/nova/abc?step=comprovacao', 'abc'],
-] as const)('renders the sale flow route for %s', (path, expectedMovement) => {
-  render(<RouterProvider initialPath={path}><AppRoutes /></RouterProvider>)
-  expect(screen.getByTestId('sale-flow-page')).toHaveTextContent(expectedMovement)
+] as const)('renders the sale flow route for %s', async (path, expectedMovement) => {
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath={path}><AppRoutes /></RouterProvider></ScopeProvider>)
+  expect(await screen.findByTestId('sale-flow-page')).toHaveTextContent(expectedMovement)
 })
 
 test('matches one document detail path segment', () => {
@@ -168,7 +203,7 @@ test('matches one document detail path segment', () => {
   expect(matchDocumentDetailPath('/documentos/a/b')).toBeNull()
 })
 
-test('renders the document detail route directly', () => {
-  render(<RouterProvider initialPath="/documentos/document-id"><AppRoutes /></RouterProvider>)
-  expect(screen.getByTestId('document-detail-page')).toHaveTextContent('document-id')
+test('renders the document detail route directly', async () => {
+  render(<ScopeProvider loadMemberships={async () => [membership]}><RouterProvider initialPath="/documentos/document-id"><AppRoutes /></RouterProvider></ScopeProvider>)
+  expect(await screen.findByTestId('document-detail-page')).toHaveTextContent('document-id')
 })

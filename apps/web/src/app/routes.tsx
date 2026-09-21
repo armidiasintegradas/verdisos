@@ -2,12 +2,14 @@ import { AuditCenterPage } from '@/features/audit/audit-center-page'
 import { DocumentDetailPage } from '@/features/documents/document-detail-page'
 import { DocumentsPage } from '@/features/documents/documents-page'
 import { HomePage } from '@/features/home/home-page'
+import { MasterDataPage } from '@/features/master-data/master-data-page'
 import { PendingPage } from '@/features/pending/pending-page'
 import { ReceiptFlowPage } from '@/features/receipts/receipt-flow/receipt-flow-page'
 import { ReceiptsPage } from '@/features/receipts/receipts-page'
 import { SaleFlowPage } from '@/features/sales/sale-flow/sale-flow-page'
 import { SalesPage } from '@/features/sales/sales-page'
 import { StockPage } from '@/features/stock/stock-page'
+import { TeamPage } from '@/features/team/team-page'
 import { AppShell } from '@/ui/layout/app-shell'
 import { useRouter } from './router'
 
@@ -42,6 +44,32 @@ export function AppRoutes() {
   const saleFlow = matchSaleFlowPath(pathname)
   const documentDetail = matchDocumentDetailPath(pathname)
 
+  const requiredPermission = (() => {
+    if (receiptFlow) return 'movement.create'
+    if (saleFlow) return 'sale.create'
+    if (documentDetail) return 'evidence.read'
+
+    switch (pathname) {
+      case '/recebimentos':
+        return 'movement.read'
+      case '/estoque':
+        return 'stock.read'
+      case '/vendas':
+        return 'sale.create'
+      case '/documentos':
+        return 'evidence.read'
+      case '/pendencias':
+        return 'evidence.validate'
+      case '/auditoria':
+        return 'audit.read'
+      case '/cadastros':
+      case '/equipe':
+        return 'scope.manage'
+      default:
+        return null
+    }
+  })()
+
   const page = (() => {
     if (receiptFlow) return <ReceiptFlowPage movementId={receiptFlow.movementId} />
     if (saleFlow) return <SaleFlowPage movementId={saleFlow.movementId} />
@@ -60,11 +88,15 @@ export function AppRoutes() {
         return <PendingPage />
       case '/auditoria':
         return <AuditCenterPage />
+      case '/cadastros':
+        return <MasterDataPage />
+      case '/equipe':
+        return <TeamPage />
       case '/':
       default:
         return <HomePage />
     }
   })()
 
-  return <AppShell>{page}</AppShell>
+  return <AppShell requiredPermission={requiredPermission}>{page}</AppShell>
 }

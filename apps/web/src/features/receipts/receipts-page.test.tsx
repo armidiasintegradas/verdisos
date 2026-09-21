@@ -1,18 +1,53 @@
 import { render, screen, within } from '@testing-library/react'
+import { vi } from 'vitest'
 import { RouterProvider } from '@/app/router'
+import { ScopeProvider, type ScopeMembership } from '@/features/scope/scope-provider'
 import { ReceiptsPage } from './receipts-page'
 
-test('keeps the #1284 document evidence separate from its weight divergence', () => {
+const mocks = vi.hoisted(() => ({ loadReceiptsOverview: vi.fn() }))
+
+vi.mock('@/services/receipts/receipts-overview-service', () => ({
+  loadReceiptsOverview: mocks.loadReceiptsOverview,
+}))
+
+const membership: ScopeMembership = {
+  membershipId: 'membership-id',
+  roleId: 'role-id',
+  tenantId: 'tenant-id',
+  organizationId: 'org-id',
+  unitId: 'unit-id',
+}
+
+test('renders persisted receipt data and document state', async () => {
+  mocks.loadReceiptsOverview.mockResolvedValue({
+    receivedTodayKg: 480,
+    receiptCountToday: 1,
+    missingDocumentCount: 0,
+    processingDocumentCount: 0,
+    items: [
+      {
+        movementId: '1284abcd-0000-0000-0000-000000000000',
+        material: 'Papelão Ondulado',
+        quantityKg: 480,
+        counterparty: 'Fornecedor Recife',
+        occurredAt: '2026-09-21T11:00:00Z',
+        documentState: 'processed',
+      },
+    ],
+  })
+
   render(
-    <RouterProvider initialPath="/recebimentos">
-      <ReceiptsPage />
-    </RouterProvider>,
+    <ScopeProvider loadMemberships={async () => [membership]}>
+      <RouterProvider initialPath="/recebimentos">
+        <ReceiptsPage />
+      </RouterProvider>
+    </ScopeProvider>,
   )
 
-  const movementTitle = screen.getByText('Recebimento #1284')
+  const movementTitle = await screen.findByText('Recebimento #1284abcd')
   const movementRow = movementTitle.closest('article')
 
   expect(movementRow).not.toBeNull()
-  expect(within(movementRow!).getByText('Divergência de peso')).toBeInTheDocument()
-  expect(within(movementRow!).getByText('Ticket #009182 anexo')).toBeInTheDocument()
+  expect(within(movementRow!).getByText('Documento processado')).toBeInTheDocument()
+  expect(within(movementRow!).getByText('Fornecedor Recife')).toBeInTheDocument()
 })

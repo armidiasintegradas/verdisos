@@ -4,8 +4,25 @@ import { ScopeProvider, type ScopeMembership } from '@/features/scope/scope-prov
 import { RouterProvider } from './router'
 import { AppRoutes } from './routes'
 
+vi.mock('@/features/auth/auth-provider', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'maria@cooperativa.org', user_metadata: {} },
+    signOut: vi.fn(),
+  }),
+}))
+
 vi.mock('@/features/scope/scope-selector', () => ({
-  ScopeSelector: () => <span>Cooperativa Demo · M1 Pilot</span>,
+  ScopeSelector: () => <span>Escopo ativo</span>,
+}))
+
+vi.mock('@/ui/layout/load-operational-identity', () => ({
+  loadOperationalIdentity: vi.fn().mockResolvedValue({
+    displayName: 'Maria Silva',
+    roleName: 'Gestora',
+    organizationName: 'Cooperativa Recife',
+    unitName: 'Galpão 01',
+    permissionCodes: ['evidence.read'],
+  }),
 }))
 
 const mocks = vi.hoisted(() => ({ loadDocuments: vi.fn() }))
@@ -47,7 +64,7 @@ test('renders documents inside the canonical shell', async () => {
     </ScopeProvider>,
   )
 
-  expect(screen.getByRole('heading', { name: 'Documentos' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
+  expect(await screen.findByRole('heading', { name: 'Documentos' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
   expect((await screen.findAllByText('4 documentos')).length).toBeGreaterThan(0)
 })

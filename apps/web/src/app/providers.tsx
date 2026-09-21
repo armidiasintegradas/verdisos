@@ -2,10 +2,12 @@ import { useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider'
 import { LoginPage } from '@/features/auth/login-page'
+import { UpdatePasswordPage } from '@/features/auth/update-password-page'
 import { ScopeProvider, useScope } from '@/features/scope/scope-provider'
+import { CooperativeOnboardingPage } from '@/features/onboarding/cooperative-onboarding-page'
 
 function ScopeBoundary({ children }: { children: ReactNode }) {
-  const { memberships, activeScope, loading, error } = useScope()
+  const { memberships, activeScope, loading, error, reload } = useScope()
 
   if (loading) {
     return <main><p>Carregando escopos de acesso…</p></main>
@@ -16,17 +18,25 @@ function ScopeBoundary({ children }: { children: ReactNode }) {
   }
 
   if (memberships.length === 0 || !activeScope) {
-    return <main><p>Nenhum escopo de acesso ativo foi encontrado para este usuário.</p></main>
+    return <CooperativeOnboardingPage onComplete={reload} />
   }
 
   return children
 }
 
 function SessionBoundary({ children }: { children: ReactNode }) {
-  const { loading } = useAuth()
+  const { loading, user, recoveryMode } = useAuth()
 
   if (loading) {
     return <main><p>Carregando sessão…</p></main>
+  }
+
+  if (recoveryMode) {
+    return <UpdatePasswordPage />
+  }
+
+  if (!user) {
+    return <LoginPage />
   }
 
   return (

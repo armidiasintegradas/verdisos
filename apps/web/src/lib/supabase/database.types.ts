@@ -1563,6 +1563,42 @@ export type Database = {
       }
     }
     Functions: {
+      assign_cooperative_membership_m1: {
+        Args: {
+          p_organization_id: string
+          p_role_code: string
+          p_unit_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      authorize_cooperative_invitation_m1: {
+        Args: {
+          p_organization_id: string
+          p_role_code: string
+          p_unit_id: string
+        }
+        Returns: boolean
+      }
+      bootstrap_cooperative_account: {
+        Args: {
+          p_display_name?: string
+          p_organization_display_name: string
+          p_organization_legal_name: string
+          p_tax_id?: string
+          p_tenant_name: string
+          p_tenant_slug: string
+          p_unit_code?: string
+          p_unit_name?: string
+        }
+        Returns: {
+          membership_id: string
+          organization_id: string
+          role_id: string
+          tenant_id: string
+          unit_id: string
+        }[]
+      }
       claim_audit_exception: {
         Args: { p_exception_id: string; p_justification: string }
         Returns: undefined
@@ -1607,6 +1643,14 @@ export type Database = {
         }
         Returns: string
       }
+      create_counterparty_m1: {
+        Args: {
+          p_external_name: string
+          p_external_tax_id?: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
       create_custody_lot: {
         Args: {
           p_justification: string
@@ -1616,6 +1660,15 @@ export type Database = {
           p_source_subject_id: string
           p_tenant_id: string
           p_unit_id: string
+        }
+        Returns: string
+      }
+      create_material_m1: {
+        Args: {
+          p_category: string
+          p_code: string
+          p_name: string
+          p_organization_id: string
         }
         Returns: string
       }
@@ -1633,6 +1686,19 @@ export type Database = {
           movement_id: string
           sale_id: string
           total_amount: number
+        }[]
+      }
+      list_cooperative_team_m1: {
+        Args: { p_organization_id: string; p_unit_id?: string }
+        Returns: {
+          display_name: string
+          email: string
+          membership_id: string
+          role_code: string
+          role_name: string
+          status: Database["public"]["Enums"]["membership_status"]
+          unit_id: string
+          user_id: string
         }[]
       }
       merge_custody_lots: {
@@ -1699,6 +1765,10 @@ export type Database = {
           p_justification: string
           p_result: string
         }
+        Returns: undefined
+      }
+      set_cooperative_membership_status_m1: {
+        Args: { p_membership_id: string; p_status: string }
         Returns: undefined
       }
       split_custody_lot: {

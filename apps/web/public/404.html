@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>Verdis</title>
+  </head>
+  <body>
+    <script>
+      ;(() => {
+        const base = '/verdisos/'
+        const requested = window.location.pathname + window.location.search + window.location.hash
+
+        try {
+          window.sessionStorage.setItem('verdis.pages.redirect', requested)
+        } catch {
+          // If sessionStorage is unavailable, returning to the app root is still safer
+          // than rendering a repository-level 404 document.
+        }
+
+        window.location.replace(base)
+      })()
+    </script>
+  </body>
+</html>
