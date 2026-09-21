@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { vi } from 'vitest'
+import { beforeEach, vi } from 'vitest'
 import { UpdatePasswordPage } from './update-password-page'
 
 const mocks = vi.hoisted(() => ({
@@ -11,6 +11,10 @@ vi.mock('./auth-provider', () => ({
     completePasswordRecovery: mocks.completePasswordRecovery,
   }),
 }))
+
+beforeEach(() => {
+  mocks.completePasswordRecovery.mockReset()
+})
 
 test('updates password only when confirmation matches', async () => {
   mocks.completePasswordRecovery.mockResolvedValue(undefined)
