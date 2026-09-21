@@ -19,11 +19,20 @@ vi.mock('@/ui/layout/load-operational-identity', () => ({
     roleName: 'Gestora',
     organizationName: 'Cooperativa Recife',
     unitName: 'Galpão 01',
+    permissionCodes: [
+      'movement.read',
+      'stock.read',
+      'sale.create',
+      'evidence.read',
+      'evidence.validate',
+      'audit.read',
+      'scope.manage',
+    ],
   }),
 }))
 
 vi.mock('@/features/scope/scope-selector', () => ({
-  ScopeSelector: () => <span>Cooperativa Demo · M1 Pilot</span>,
+  ScopeSelector: () => <span>Escopo ativo</span>,
 }))
 
 vi.mock('@/features/receipts/receipt-flow/receipt-flow-page', () => ({
@@ -80,7 +89,7 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/')
 })
 
-test.each(cases)('renders %s with the correct active navigation item', (path, label) => {
+test.each(cases)('renders %s with the correct active navigation item', async (path, label) => {
   const routes = (
     <RouterProvider initialPath={path}>
       <AppRoutes />
@@ -91,8 +100,7 @@ test.each(cases)('renders %s with the correct active navigation item', (path, la
 
   expect(screen.getByRole('heading', { name: label })).toBeInTheDocument()
 
-  const activeLink = screen
-    .getAllByRole('link', { name: label })
+  const activeLink = (await screen.findAllByRole('link', { name: label }))
     .find((link) => link.getAttribute('aria-current') === 'page')
 
   expect(activeLink).toBeDefined()
