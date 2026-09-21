@@ -13,7 +13,9 @@ type AuthContextValue = {
   session: Session | null
   user: User | null
   loading: boolean
+  recoveryMode: boolean
   signOut: () => Promise<void>
+  completePasswordRecovery: (password: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -21,6 +23,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [recoveryMode, setRecoveryMode] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -35,9 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return
       setSession(nextSession)
+      setRecoveryMode(event === 'PASSWORD_RECOVERY')
       setLoading(false)
     })
 
@@ -52,12 +56,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       user: session?.user ?? null,
       loading,
+      recoveryMode,
       signOut: async () => {
         const { error } = await supabase.auth.signOut()
         if (error) throw error
+        setRecoveryMode(false)
+      },
+      completePasswordRecovery: async (password: string) => {
+        const { error } = await supabase.auth.updateUser({ password })
+        if (error) throw error
+        setRecoveryMode(false)
       },
     }),
-    [session, loading],
+    [session, loading, recoveryMode],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
