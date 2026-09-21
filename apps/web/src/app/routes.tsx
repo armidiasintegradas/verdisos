@@ -44,6 +44,32 @@ export function AppRoutes() {
   const saleFlow = matchSaleFlowPath(pathname)
   const documentDetail = matchDocumentDetailPath(pathname)
 
+  const requiredPermission = (() => {
+    if (receiptFlow) return 'movement.create'
+    if (saleFlow) return 'sale.create'
+    if (documentDetail) return 'evidence.read'
+
+    switch (pathname) {
+      case '/recebimentos':
+        return 'movement.read'
+      case '/estoque':
+        return 'stock.read'
+      case '/vendas':
+        return 'sale.create'
+      case '/documentos':
+        return 'evidence.read'
+      case '/pendencias':
+        return 'evidence.validate'
+      case '/auditoria':
+        return 'audit.read'
+      case '/cadastros':
+      case '/equipe':
+        return 'scope.manage'
+      default:
+        return null
+    }
+  })()
+
   const page = (() => {
     if (receiptFlow) return <ReceiptFlowPage movementId={receiptFlow.movementId} />
     if (saleFlow) return <SaleFlowPage movementId={saleFlow.movementId} />
@@ -72,5 +98,5 @@ export function AppRoutes() {
     }
   })()
 
-  return <AppShell>{page}</AppShell>
+  return <AppShell requiredPermission={requiredPermission}>{page}</AppShell>
 }
