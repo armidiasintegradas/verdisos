@@ -21,6 +21,19 @@
 
   </head>
   <body>
+    <script>
+      ;(() => {
+        try {
+          const redirect = window.sessionStorage.getItem('verdis.pages.redirect')
+          if (redirect) {
+            window.sessionStorage.removeItem('verdis.pages.redirect')
+            window.history.replaceState({}, '', redirect)
+          }
+        } catch {
+          // Route recovery is best-effort; the application still boots at the root.
+        }
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
