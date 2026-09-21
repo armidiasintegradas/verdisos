@@ -54,7 +54,7 @@ test('renders the canonical navigation with real operational identity', async ()
   )
 
   expect(screen.getAllByText('verdis.').length).toBeGreaterThan(0)
-  expect(screen.getByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
+  expect(await screen.findByRole('link', { name: 'Documentos' })).toHaveAttribute('aria-current', 'page')
 
   await waitFor(() => {
     expect(screen.getByText('Maria Silva — Gestora')).toBeInTheDocument()
