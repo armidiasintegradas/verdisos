@@ -1563,6 +1563,25 @@ export type Database = {
       }
     }
     Functions: {
+      bootstrap_cooperative_account: {
+        Args: {
+          p_display_name?: string
+          p_organization_display_name: string
+          p_organization_legal_name: string
+          p_tax_id?: string
+          p_tenant_name: string
+          p_tenant_slug: string
+          p_unit_code?: string
+          p_unit_name?: string
+        }
+        Returns: {
+          membership_id: string
+          organization_id: string
+          role_id: string
+          tenant_id: string
+          unit_id: string
+        }[]
+      }
       claim_audit_exception: {
         Args: { p_exception_id: string; p_justification: string }
         Returns: undefined
