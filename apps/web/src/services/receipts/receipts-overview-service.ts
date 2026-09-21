@@ -100,8 +100,8 @@ export async function loadReceiptsOverview(scope: ActiveScope): Promise<Receipts
     const extraction = evidence?.document_id ? documentsById.get(evidence.document_id) : null
 
     let documentState: ReceiptListItem['documentState'] = 'missing'
-    if (extraction === 'processed') documentState = 'processed'
-    else if (extraction === 'failed') documentState = 'failed'
+    if (extraction === 'rejected') documentState = 'failed'
+    else if (extraction === 'accepted' || extraction === 'needs_review') documentState = 'processed'
     else if (evidence?.document_id) documentState = 'processing'
 
     return {
